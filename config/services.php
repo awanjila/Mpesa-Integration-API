@@ -14,6 +14,20 @@ return [
     |
     */
 
+    'mpesa' => [
+        'env' => env('MPESA_ENV', 'sandbox'),
+        'consumer_key' => env('MPESA_CONSUMER_KEY'),
+        'consumer_secret' => env('MPESA_CONSUMER_SECRET'),
+        'shortcode' => env('MPESA_SHORTCODE', '174379'),
+        'passkey' => env('MPESA_PASSKEY'),
+        'callback_url' => env('MPESA_CALLBACK_URL'),
+    ],
+
+    'shopify' => [
+        'webhook_secret' => env('SHOPIFY_WEBHOOK_SECRET'),
+        'store_domain' => env('SHOPIFY_STORE_DOMAIN'),
+    ],
+
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),

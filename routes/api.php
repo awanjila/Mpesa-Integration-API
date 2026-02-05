@@ -6,23 +6,38 @@ use App\Http\Controllers\MpesaController;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| API Routes - Shopify M-Pesa Integration
 |--------------------------------------------------------------------------
 |
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
+| Simple 3-route setup:
+| 1. Shopify webhook triggers payment
+| 2. M-Pesa sends callback
+| 3. Shopify checks status (optional)
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// Health check
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'service' => 'Shopify M-Pesa Gateway',
+        'timestamp' => now()->toIso8601String()
+    ]);
 });
 
+// 1. SHOPIFY WEBHOOK → Triggers M-Pesa STK Push
 
-Route::post('/mpesa/stk-push', [MpesaController::class, 'stkPush']);
-Route::post('/mpesa/callback', [MpesaController::class, 'callback']);
-Route::get('/mpesa/status', [MpesaController::class, 'status']);
+Route::post('/payment/initiate/test', [MpesaController::class, 'stkPush']);
 
-Route::post('/mpesa/stk-push-test', [MpesaController::class, 'stkPushTest']);
+Route::post('/payment/initiate', [MpesaController::class, 'stkPush'])
+    ->middleware('verify.shopify.webhook');
 
+// 2. M-PESA CALLBACK → Updates payment status
+Route::post('/payment/callback', [MpesaController::class, 'callback']);
+
+// 3. STATUS CHECK → Shopify polls for payment result (optional)
+Route::get('/payment/status/{orderId}', [MpesaController::class, 'checkStatus']);
+
+// Test endpoint (development only)
+Route::post('/payment/test', [MpesaController::class, 'stkPushTest'])
+    ->middleware('throttle:5,1');
